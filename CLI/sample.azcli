@@ -1,0 +1,1 @@
+az bicep decompile --file "C:\Users\sattwik.sengupta2\ais-workspace\la\stateful\StatefullaPub\workflow.json"

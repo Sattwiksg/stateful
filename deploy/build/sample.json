@@ -1,0 +1,182 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "For_each": {
+                "type": "Foreach",
+                "foreach": "@triggerBody()?['Details']",
+                "actions": {
+                    "Compose": {
+                        "type": "Compose",
+                        "inputs": {
+                            "Header": "@triggerBody()?['Header']",
+                            "InvoiceLineItem": "@items('For_each')"
+                        },
+                        "runAfter": {}
+                    },
+                    "Send_message": {
+                        "type": "ServiceProvider",
+                        "inputs": {
+                            "parameters": {
+                                "entityName": "aistopic",
+                                "message": {
+                                    "contentData": "@outputs('Compose')",
+                                    "contentType": "@parameters('contentType')",
+                                    "messageId": "@concat(triggerBody()?['RequestId'],' - ', triggerBody()?['CustomerId'])"
+                                }
+                            },
+                            "serviceProviderConfiguration": {
+                                "connectionName": "serviceBus",
+                                "operationId": "sendMessage",
+                                "serviceProviderId": "/serviceProviders/serviceBus"
+                            }
+                        },
+                        "runAfter": {
+                            "Compose": [
+                                "Succeeded"
+                            ]
+                        }
+                    }
+                },
+                "runAfter": {},
+                "runtimeConfiguration": {
+                    "concurrency": {
+                        "repetitions": 1
+                    }
+                }
+            }
+        },
+        "triggers": {
+            "manual": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "RequestId": {
+                                "type": "string"
+                            },
+                            "CustomerId": {
+                                "type": "string"
+                            },
+                            "Header": {
+                                "type": "object",
+                                "properties": {
+                                    "RequestName": {
+                                        "type": "string"
+                                    },
+                                    "AccountNumber": {
+                                        "type": "string"
+                                    },
+                                    "LetterTemplateId": {},
+                                    "RequestNumber": {
+                                        "type": "string"
+                                    },
+                                    "LetterIssueDate": {
+                                        "type": "string"
+                                    },
+                                    "ProcessTypeName": {
+                                        "type": "string"
+                                    },
+                                    "RequestStatus": {
+                                        "type": "string"
+                                    },
+                                    "Cycle": {
+                                        "type": "string"
+                                    },
+                                    "Cycle1DueDate": {
+                                        "type": "string"
+                                    },
+                                    "Cycle1Status": {
+                                        "type": "string"
+                                    },
+                                    "Cycle2DueDate": {
+                                        "type": "string"
+                                    },
+                                    "Cycle2Status": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "Details": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "DetailName": {
+                                            "type": "string"
+                                        },
+                                        "AccountNumber": {
+                                            "type": "string"
+                                        },
+                                        "InvoiceNumber": {
+                                            "type": "string"
+                                        },
+                                        "InvoiceDate": {
+                                            "type": "string"
+                                        },
+                                        "SOANumber": {
+                                            "type": "string"
+                                        },
+                                        "BaseAmount": {
+                                            "type": "integer"
+                                        },
+                                        "CollectionLetterCode": {
+                                            "type": "string"
+                                        },
+                                        "CollectionLetterNumber": {
+                                            "type": "string"
+                                        },
+                                        "CurrencyISOCode": {
+                                            "type": "string"
+                                        },
+                                        "RemainingAmount": {
+                                            "type": "integer"
+                                        },
+                                        "LineNumber": {
+                                            "type": "integer"
+                                        },
+                                        "InvoiceDueDate": {
+                                            "type": "string"
+                                        },
+                                        "OverdueDays": {
+                                            "type": "integer"
+                                        },
+                                        "RecordType": {
+                                            "type": "string"
+                                        },
+                                        "OverdueAmount": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "DetailName",
+                                        "AccountNumber",
+                                        "InvoiceNumber",
+                                        "InvoiceDate",
+                                        "SOANumber",
+                                        "BaseAmount",
+                                        "CollectionLetterCode",
+                                        "CollectionLetterNumber",
+                                        "CurrencyISOCode",
+                                        "RemainingAmount",
+                                        "LineNumber",
+                                        "InvoiceDueDate",
+                                        "OverdueDays",
+                                        "RecordType",
+                                        "OverdueAmount"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "method": "POST"
+                }
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {}
+    },
+    "kind": "Stateful"
+}
